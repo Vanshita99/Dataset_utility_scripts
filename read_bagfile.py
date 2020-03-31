@@ -1,10 +1,16 @@
+#import sys
+#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages') # in order to import cv2 under python3
+import cv2
+#sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages') # append back in order to import rospy
 import rosbag
 import numpy as np
 from PIL import Image
 import os
 import sensor_msgs.point_cloud2 as pc2
 import datetime
-import cv2
+
+
+
 
 zed_camera_matrix = [[699.8670043945312, 0.0, 603.5809936523438],
                      [0.0, 699.8670043945312, 332.77801513671875],
@@ -30,9 +36,8 @@ for topic, msg, t in bag.read_messages(topics=['/velodyne_points']):
     gen = pc2.read_points(msg, skip_nans=True, field_names=("x", "y", "z","intensity","ring"))
     gen = list(gen)
     gen = np.asarray(zip(*gen),dtype=np.float32).transpose()
-    np.save(os.path.join(data_dir,"velodyne/" + '{0:010d}.npy'.format(index)),gen)
+    np.save(os.path.join(data_dir,"velodyne1/" + '{0:010d}.npy'.format(index)),gen)
     index += 1
-
 velodyne_stamps = np.array(velodyne_stamps)
 index = 0
 
