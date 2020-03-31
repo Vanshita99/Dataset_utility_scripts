@@ -13,8 +13,8 @@ zed_dist = [-0.171875, 0.02449920028448105, 0.0, 0.0, 0.0]
 zed_camera_matrix = np.array(zed_camera_matrix)
 zed_dist = np.array(zed_dist)
 
-bag = rosbag.Bag('/media/ash/OS/IIIT_Labels/seq1_vindhya.bag')
-data_dir='/media/ash/OS/IIIT_Labels/val/vindhya_1/'
+bag = rosbag.Bag('/home/vanshita/bag3.bag')
+data_dir='/home/vanshita/Documents/exported_bag3_data'
 
 img_path = os.path.join(data_dir,"image_full")
 if not os.path.exists(img_path):
