@@ -77,8 +77,8 @@ def project_lid_on_img(lid_pt,T,p):
     return pix
 
 
-file='0000000000.png'
-points = np.load('0000000000.npy')
+file='0000000145.png'
+points = np.load('0000000145.npy')
 homo_points = points
 homo_points = homo_points.transpose()
 homo_points[3,:] = 1                         # Convert to homogeneous coordinates
@@ -90,6 +90,8 @@ shifted_points = np.dot(hacky_trans_matrix,shifted_points)
 shifted_points = shifted_points.transpose()[:,:3]
 
 img = cv2.imread(file)
+print("imagesize",img.shape)
+img1=img
 # img = cv2.undistort(img,cameraMatrix=zed_camera_matrix,distCoeffs=zed_dist)
 # depth_read = Image.open(os.path.join(depth_path,file.split('.')[0] + '.png'))
 # label_read = Image.open(os.pInput camera matrix ￼ath.join(label_path,file.split('.')[0] + '.png'))
@@ -102,32 +104,83 @@ rot, _ = cv2.Rodrigues(rot_vec)
 proj_points,_ = cv2.projectPoints(shifted_points,rot,trans_vec,projection_matrix,distCoeffs=np.zeros(5))
 proj_points = proj_points.squeeze()
 # indexes = np.nonzero(depth_read)
+print("velo_img",proj_points.shape)
+print("velo",shifted_points.shape)
+print("velo_img_pts",proj_points[:10])
+li1=[]
+li2=[]
+sum=0
+ctr=0
+xmin=773
+xmax=791
+ymin=190
+ymax=258
+import math
+sum2=0
+ctr2=0
+xmin2=630
+xmax2=665
+ymin2=203
+ymax2=248
+from scipy import stats
+
+
 for i in range(proj_points.shape[0]):
     x = int(proj_points[i,0])
     y = int(proj_points[i,1])
     depth = np.sqrt(pow(shifted_points[i][0],2) + pow(shifted_points[i][1],2) + pow(shifted_points[i][2],2))
     depth = np.clip(depth,a_min=0,a_max=100)
     # depth = (depth/100)*(65535-10) + 10
-    if (y < 720 and x < 1280 and x >= 0 and y >= 0 and shifted_points[i][2]>=0 and depth<15):
+    if (xmin<=x and x<=xmax and ymin<=y and y<=ymax and shifted_points[i][2]>=0 and depth<100):
+         # depth_img[y, x] = depth
+         x1=shifted_points[i,0]
+         y1=shifted_points[i,1]
+         z=shifted_points[i,2]
+         dist=math.sqrt(x1**2+y1**2+z**2)
+         li1.append(dist)
+         hsv = np.zeros((1, 1, 3)).astype(np.uint8)
+         hsv[:, :, 0] = int(((depth)/15) * 159)
+         hsv[0, 0, 1] = 255
+         hsv[0, 0, 2] = 200
+         hsv = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+         cv2.circle(img,(x,y),1,color=(int(hsv[0,0,0]),int(hsv[0,0,1]),int(hsv[0,0,2])),thickness=2)
+         # cv2.circle(img,(x,y),2,color=(0,255,0),thickness=1)
+
+
+    if (xmin2<=x and x<=xmax2 and ymin2<=y and y<=ymax2 and shifted_points[i][2]>=0 and depth<100):
         # depth_img[y, x] = depth
+        x1=shifted_points[i,0]
+        y1=shifted_points[i,1]
+        z=shifted_points[i,2]
+        dist2=math.sqrt(x1**2+y1**2+z**2)
+        li2.append(dist2)
         hsv = np.zeros((1, 1, 3)).astype(np.uint8)
-        hsv[:, :, 0] = int((depth) / (15) * 159)
+        hsv[:, :, 0] = int(((depth)/15) * 159)
         hsv[0, 0, 1] = 255
         hsv[0, 0, 2] = 200
         hsv = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
         cv2.circle(img,(x,y),1,color=(int(hsv[0,0,0]),int(hsv[0,0,1]),int(hsv[0,0,2])),thickness=2)
-        # cv2.circle(img,(x,y),2,color=(0,255,0),thickness=1)
 # x,y = indexes
 # for i in range(len(x)):
 #     if label_read[x[i],y[i]] == 2:
 #         cv2.circle(img,(y[i],x[i]),3,color=(0,255,0))
+print("mean of traffic_light : ", np.mean(li1)) 
+print("mean of car : ", np.mean(li2))
 
-if img is not None:
-    cv2.imshow("window",img)
+print("median of traffic_light : ", np.median(li1)) 
+print("median of car : ", np.median(li2))
+
+print("mode of traffic_light : ", stats.mode(li1)) 
+print("mode of car : ", stats.mode(li2))
+
+cv2.imshow("window",img)
+cv2.waitKey()
+
+# if img is not None:
+#     cv2.imshow("window",img)
 
 # cv2.imwrite(os.path.join(depth_path,file),depth_img)
-# cv2.waitKey(0)
-if cv2.waitKey(10) == ord('q'):
-    print('Quitting....')
+#cv2.waitKey()
+# if cv2.waitKey(100) == ord('q'):
+#     print('Quitting....')
     
-cv2.destroyAllWindows()
